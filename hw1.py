@@ -23,6 +23,17 @@ def right_side_left(img):
 	result.putdata(data.data)
 	result.save('results/right_side_left.bmp')
 
+def diagonally_mirror(img):
+	data = Pixels2D(img)
+
+	for y in range(img.height):
+		for x in range(y):
+			data[x, y] = data[y, x]
+
+	result = Image.new(img.mode, img.size)
+	result.putdata(data.data)
+	result.save('results/diagonally_mirror.bmp')
+
 if __name__ == '__main__':
 	img = Image.open('benchmarks/lena.bmp')
 	
@@ -31,4 +42,7 @@ if __name__ == '__main__':
 
 	# 2
 	right_side_left(img)
+
+	# 3
+	diagonally_mirror(img)
 
