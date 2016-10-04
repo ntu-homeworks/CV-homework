@@ -4,6 +4,11 @@ R05944012 資訊網路與多媒體研究所 梁智湧
 
 Source code are included in the folder `src`.
 
+### Special Bonus Implemented
+I've done a special feature to improve the result in the third problem of this homework. I think this is worthy to get some bonus credit.
+
+In order to distinguish between various connected components, more easily than only with rectangle boarders, each component is assigned with an unique color and pixels of that component is filled with a relevant color. In addition, the rectangle boarders are also drew with that relevant color. Please reference to "**Result Images**" for the demonstration and "**Implementation Detail**" for the implementation (all the color drawing process do not depend on any library utility).
+
 ### Program Description
 - Programming language: **Python 2.7.10**
 - Used library: **Pillow 3.3.1** (Used to load/store image)
@@ -124,29 +129,43 @@ def draw_rectangle(img, left, right, top, bottom, color):
 The function `draw_rectangle` is a helper to draw the rectangle borders on the left, right, top, and bottom side of a connected component with specified color. Arguments left, right, top, and bottom of this function are all scalars, representing the leftmost, rightmost, topmost, and bottom-most positions of the rectangle, respectively.
 
 ```python
-for component in connected_components(img_bin):
-        color = next(colors)
-        fill_color = tuple(map(lambda c: int(c * 0.6), color))
-
-        (left, top), (right, bottom) = component[0], component[0]
-        for x, y in component:
-            if x < left:
-                left = x
-            if x > right:
-                right = x
-            if y < top:
-                top = y
-            if y > bottom:
-                bottom = y
-            img_rec.putpixel((x, y), fill_color)
-
-        draw_rectangle(img_rec, left, right, top, bottom, color)
+def draw_centroid(img, pos, color):
+    x, y = pos
+    width, height = 11, 11
+    for r in range(-width / 2, width / 2 + 1):
+        img.putpixel((x + r, y), color)
+        img.putpixel((x, y + r), color)
 ```
-To sum it up, this code fragment finds the rectangular boundaries of each connected component and draw the rectangle borders for that component. It also fills the color of each component so as to distinguish between various connected components more easily.
+The function `draw_centroid` is a helper to draw a `+`, with color `color`, on a specified position `pos`.
+
+```python
+for component in connected_components(img_bin):
+    color = next(colors)
+    fill_color = tuple(map(lambda c: int(c * 0.4), color))
+
+    (left, top), (right, bottom) = component[0], component[0]
+    centroid_x, centroid_y = 0, 0
+    for x, y in component:
+        if x < left:
+            left = x
+        if x > right:
+            right = x
+        if y < top:
+            top = y
+        if y > bottom:
+            bottom = y
+        img_rec.putpixel((x, y), fill_color)
+        centroid_x += x
+        centroid_y += y
+
+    draw_rectangle(img_rec, left, right, top, bottom, color)
+    draw_centroid(img_rec, (centroid_x / len(component), centroid_y / len(component)), color)
+```
+To sum it up, this code fragment finds the rectangular boundaries of each connected component and draw the rectangle borders for that component. It also fills the color of each component so as to distinguish between various connected components more easily. In addition, it calculates the centroid position while in the iteration and draw it with `draw_centroid`.
 
 ### Result Images
 | Original | Thresholding | Histogram | Connected Components |
 |:--------:|:------------:|:---------:|:--------------------:|
-| ![Original](https://i.imgur.com/oJbJsKM.png) | ![Thresholding](https://i.imgur.com/plM5S5R.png) | ![Histogram](https://i.imgur.com/5cCnCtJ.png?1) | ![Connected Components](https://i.imgur.com/CkQ7av6.png) |
+| ![Original](https://i.imgur.com/oJbJsKM.png) | ![Thresholding](https://i.imgur.com/plM5S5R.png) | ![Histogram](https://i.imgur.com/5cCnCtJ.png?1) | ![Connected Components](https://i.imgur.com/JN3epxA.png) |
 
 

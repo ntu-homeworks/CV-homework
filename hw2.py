@@ -69,6 +69,12 @@ def draw_rectangle(img, left, right, top, bottom, color):
         img.putpixel((left, y), color)
         img.putpixel((right, y), color)
 
+def draw_centroid(img, pos, color):
+    x, y = pos
+    width, height = 11, 11
+    for r in range(-width / 2, width / 2 + 1):
+        img.putpixel((x + r, y), color)
+        img.putpixel((x, y + r), color)
 
 if __name__ == '__main__':
     img = Image.open('benchmarks/lena.bmp')
@@ -81,16 +87,17 @@ if __name__ == '__main__':
     draw_histogram(histogram(img)).save('results/histogram.bmp')
 
     # 3
-    RAINBOW = ((255, 0, 0), (255, 127, 0), (255, 255, 0), (0, 255, 0), (0, 0, 255), (127, 0, 255), (255, 0, 255))
+    RAINBOW = ((255, 0, 0), (255, 127, 0), (255, 255, 0), (0, 255, 0), (100, 100, 255), (127, 0, 255), (255, 0, 255))
 
     img_rec = Image.new('RGB', img.size)
     img_rec.putdata(map(lambda p: (p*255, p*255, p*255), img_bin.getdata()))
     colors = iter(RAINBOW)
     for component in connected_components(img_bin):
         color = next(colors)
-        fill_color = tuple(map(lambda c: int(c * 0.6), color))
+        fill_color = tuple(map(lambda c: int(c * 0.4), color))
 
         (left, top), (right, bottom) = component[0], component[0]
+        centroid_x, centroid_y = 0, 0
         for x, y in component:
             if x < left:
                 left = x
@@ -101,7 +108,10 @@ if __name__ == '__main__':
             if y > bottom:
                 bottom = y
             img_rec.putpixel((x, y), fill_color)
+            centroid_x += x
+            centroid_y += y
 
         draw_rectangle(img_rec, left, right, top, bottom, color)
+        draw_centroid(img_rec, (centroid_x / len(component), centroid_y / len(component)), color)
     img_rec.save('results/connected_components.bmp')
 
