@@ -14,3 +14,7 @@ if __name__ == '__main__':
 
     histogram_equalization(img).save('results/histogram_equalization.bmp')
 
+    img_div3 = Image.new('L', img.size)
+    img_div3.putdata(map(lambda p: p / 3, img.getdata()))
+    histogram_equalization(img_div3).save('results/histogram_equalization_div3.bmp')
+
