@@ -6,12 +6,18 @@ class GreyscaleMorphology(BinaryMorphology):
     # Arguments are expected to be `ImageFunction`s.
 
     @classmethod
-    def dilation(cls, a, b):
-        return a
+    def dilation(cls, f, k):
+        return ImageFunction(
+            func=lambda x: max((f(tuple(map(lambda (l,r): l-r, zip(x, z)))) + k(z) for z in k)),
+            domain=(tuple(map(sum, zip(x_minus_z, z))) for z in k for x_minus_z in f)
+        )
 
     @classmethod
-    def erosion(cls, a, b):
-        return a
+    def erosion(cls, f, k):
+        return ImageFunction(
+            func=lambda x: min((f(tuple(map(sum, zip(x, z)))) - k(z) for z in k)),
+            domain=(tuple(map(lambda (l,r): l-r, zip(x_add_z, z))) for z in k for x_add_z in f)
+        )
 
     @classmethod
     def hit_and_miss(cls, a, j, k):
@@ -33,6 +39,6 @@ if __name__ == '__main__':
 
     GreyscaleMorphology.dilation(img_func, oct_kernel).to_image('L', img.size).save('results/grey_dilation.bmp')
     GreyscaleMorphology.erosion(img_func, oct_kernel).to_image('L', img.size).save('results/grey_erosion.bmp')
-    GreyscaleMorphology.opening(img_func, oct_kernel).to_image('L', img.size).save('results/grey_opening.bmp')
-    GreyscaleMorphology.closing(img_func, oct_kernel).to_image('L', img.size).save('results/grey_closing.bmp')
+    #GreyscaleMorphology.opening(img_func, oct_kernel).to_image('L', img.size).save('results/grey_opening.bmp')
+    #GreyscaleMorphology.closing(img_func, oct_kernel).to_image('L', img.size).save('results/grey_closing.bmp')
 
