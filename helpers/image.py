@@ -1,4 +1,6 @@
 from PIL import Image
+from collections import Iterable
+from itertools import tee
 
 class Pixels2D(object):
     
@@ -73,4 +75,38 @@ class PixelSet(set):
         result.origin = self.origin
 
         return result
+
+
+class ImageFunction(object):
+    
+    def __init__(self, func, domain):
+        if not callable(func):
+            raise ValueError('`func` is not a callable.')
+        if not isinstance(domain, Iterable):
+            raise ValueError('`domain` is not iterable.')
+
+        self.func = func
+        self.domain = domain
+
+    def __call__(self, *args, **kwargs):
+        return self.func(*args, **kwargs)
+
+    def __iter__(self):
+        self.domain, ret = tee(self.domain)
+        return ret
+
+    @classmethod
+    def from_image(cls, img):
+        return cls(
+            func=img.getpixel,
+            domain=((x, y) for x in xrange(img.width) for y in xrange(img.height))
+        )
+
+    def to_image(self, *args):
+        ret = Image.new(*args)
+        for p in self:
+            ret.putpixel(p, self(p))
+
+        return ret
+
 
