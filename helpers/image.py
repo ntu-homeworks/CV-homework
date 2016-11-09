@@ -92,21 +92,26 @@ class ImageFunction(object):
         return self.func(*args, **kwargs)
 
     def __iter__(self):
-        self.domain, ret = tee(self.domain)
-        return ret
+        self.domain = set(self.domain)
+        return iter(self.domain)
 
     @classmethod
     def from_image(cls, img):
         return cls(
-            func=img.getpixel,
+            func=lambda p: img.getpixel(p) if cls._in_range(p, img.size) else 0,
             domain=((x, y) for x in xrange(img.width) for y in xrange(img.height))
         )
 
     def to_image(self, *args):
         ret = Image.new(*args)
         for p in self:
-            ret.putpixel(p, self(p))
+            if self._in_range(p, ret.size):
+                ret.putpixel(p, self(p))
 
         return ret
+
+    @staticmethod
+    def _in_range((x, y), (width, height)):
+        return 0 <= x < width and 0 <= y < height
 
 
