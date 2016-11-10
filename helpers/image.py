@@ -2,6 +2,36 @@ from PIL import Image
 from collections import Iterable
 from itertools import tee
 
+class Coor(tuple):
+    
+    def __radd__(self, other):
+        if other == 0:
+            return self
+        return self + other
+
+    def __add__(self, other):
+        if isinstance(other, Coor) and len(self) == len(other):
+            return map(sum, zip(self, other))
+        raise TypeError("Unsupported addition.")
+
+    def __sub__(self, other):
+        if isinstance(other, Coor) and len(self) == len(other):
+            return map(lambda (l, r): l - r, zip(self, other))
+        raise TypeError("Unsupported substraction.")
+
+class Rect2D(object):
+
+    def __init__(self, first, second):
+        if not isinstance(first, Coor) or not isinstance(second, Coor) or not len(first) == len(second) == 2:
+            raise TypeError("Expected two 2D 'Coor'.")
+        (self.left, self.right), (self.top, self.bottom) = map(sorted, zip(first, second))
+
+    def __contains__(self, item):
+        if not isinstance(item, Coor) or len(item) != 2:
+            raise TypeError("Expected 2D `Coor`.")
+        return self.left <= item[0] <= self.right and self.top <= item[1] <= self.bottom
+
+
 class Pixels2D(object):
     
     def __init__(self, pixels_or_image, width=None, size=None):
@@ -95,7 +125,7 @@ class ImageFunction(object):
     def from_image(cls, img):
         return cls(
             func=lambda p: img.getpixel(p) if cls._in_range(p, img.size) else 0,
-            domain=((x, y) for x in xrange(img.width) for y in xrange(img.height))
+            domain=(Coor(x, y) for x in xrange(img.width) for y in xrange(img.height))
         )
 
     def to_image(self, *args):
