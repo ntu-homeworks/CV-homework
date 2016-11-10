@@ -91,12 +91,6 @@ class ImageFunction(object):
     def __call__(self, *args, **kwargs):
         return self.func(*args, **kwargs)
 
-    def __iter__(self):
-        return iter(self.domain)
-
-    def __contains__(self, item):
-        return item in self.domain
-
     @classmethod
     def from_image(cls, img):
         return cls(

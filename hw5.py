@@ -9,22 +9,22 @@ class GreyscaleMorphology(BinaryMorphology):
     def dilation(cls, f, k):
         return ImageFunction(
             func=lambda x: max(map(lambda (x_minus_z, z): f(x_minus_z) + k(z), 
-                filter(lambda (x_minus_z, z): x_minus_z in f, 
-                    ((tuple(map(lambda (l,r): l-r, zip(x, z))), z) for z in k)
+                filter(lambda (x_minus_z, z): x_minus_z in f.domain, 
+                    ((tuple(map(lambda (l,r): l-r, zip(x, z))), z) for z in k.domain)
                 )
             )),
-            domain=(tuple(map(sum, zip(x_minus_z, z))) for z in k for x_minus_z in f)
+            domain=(tuple(map(sum, zip(x_minus_z, z))) for z in k.domain for x_minus_z in f.domain)
         )
 
     @classmethod
     def erosion(cls, f, k):
         return ImageFunction(
             func=lambda x: max(0, min(map(lambda (x_add_z, z): f(x_add_z) - k(z), 
-                filter(lambda (x_add_z, z): x_add_z in f, 
-                    ((tuple(map(sum, zip(x, z))), z) for z in k)
+                filter(lambda (x_add_z, z): x_add_z in f.domain, 
+                    ((tuple(map(sum, zip(x, z))), z) for z in k.domain)
                 )
             ))),
-            domain=(tuple(map(lambda (l,r): l-r, zip(x_add_z, z))) for z in k for x_add_z in f)
+            domain=(tuple(map(lambda (l,r): l-r, zip(x_add_z, z))) for z in k.domain for x_add_z in f.domain)
         )
 
     @classmethod
@@ -43,7 +43,7 @@ class ExtractedGreyscaleMorphology(GreyscaleMorphology):
 
     @staticmethod
     def _make_lut(f):
-        lut = {d: f(d) for d in f}
+        lut = {d: f(d) for d in f.domain}
 
         return ImageFunction(
             func=lut.__getitem__,
