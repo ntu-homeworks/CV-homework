@@ -1,21 +1,21 @@
 from PIL import Image
 from hw2 import thresholding
-from helpers.image import PixelSet
+from helpers.image import PixelSet, Coor, Rect2D
 
 class BinaryMorphology(object):
     # Arguments are expected to be `PixelSet`
 
     @classmethod
     def dilation(cls, a, b):
-        width, height = a.size
-        result = PixelSet(filter(lambda (x, y): 0 <= x < width and 0 <= y < height, [(ax + bx, ay + by) for (ax, ay) in a for (bx, by) in b]))
+        result_rect = Rect2D(Coor((0, 0)), Coor(a.size))
+        result = PixelSet(filter(lambda xy: xy in result_rect, [axy + bxy for axy in a for bxy in b]))
         result.size, result.origin = a.size, a.origin
         return result
 
     @classmethod
     def erosion(cls, a, b):
-        width, height = a.size
-        result = PixelSet([(x, y) for x in range(width) for y in range(height) if all([(x + bx, y + by) in a for (bx, by) in b])])
+        result_rect = Rect2D(Coor((0, 0)), Coor(a.size))
+        result = PixelSet(filter(lambda xy: all([xy + bxy in a for bxy in b]), result_rect))
         result.size, result.origin = a.size, a.origin
         return result
 
@@ -43,7 +43,7 @@ if __name__ == '__main__':
         1, 1, 1, 1, 1,
         1, 1, 1, 1, 1,
         0, 1, 1, 1, 0,
-    ], size=(5, 5), value=1, origin=(2, 2))
+    ], size=(5, 5), value=1, origin=Coor((2, 2)))
 
     BinaryMorphology.dilation(white_set, oct_kernel).to_image().save('results/dilation.bmp')
     BinaryMorphology.erosion(white_set, oct_kernel).to_image().save('results/erosion.bmp')
@@ -56,14 +56,14 @@ if __name__ == '__main__':
         1, 1, 0, 0, 0,
         0, 1, 0, 0, 0,
         0, 0, 0, 0, 0,
-    ], size=(5, 5), value=1, origin=(1, 2))
+    ], size=(5, 5), value=1, origin=Coor((1, 2)))
     k = PixelSet.from_pixels([
         0, 0, 0, 0, 0,
         0, 1, 1, 0, 0,
         0, 0, 1, 0, 0,
         0, 0, 0, 0, 0,
         0, 0, 0, 0, 0,
-    ], size=(5, 5), value=1, origin=(1, 2))
+    ], size=(5, 5), value=1, origin=Coor((1, 2)))
 
     BinaryMorphology.hit_and_miss(white_set, j, k).to_image().save('results/hit_and_miss.bmp')
 

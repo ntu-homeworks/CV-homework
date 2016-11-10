@@ -1,5 +1,5 @@
 from PIL import Image
-from helpers.image import ImageFunction
+from helpers.image import Coor, ImageFunction
 from hw4 import BinaryMorphology
 
 class GreyscaleMorphology(BinaryMorphology):
@@ -8,23 +8,19 @@ class GreyscaleMorphology(BinaryMorphology):
     @classmethod
     def dilation(cls, f, k):
         return ImageFunction(
-            func=lambda x: max(map(lambda (x_minus_z, z): f(x_minus_z) + k(z), 
-                filter(lambda (x_minus_z, z): x_minus_z in f.domain, 
-                    ((tuple(map(lambda (l,r): l-r, zip(x, z))), z) for z in k.domain)
-                )
-            )),
-            domain=(tuple(map(sum, zip(x_minus_z, z))) for z in k.domain for x_minus_z in f.domain)
+            func=lambda x: max(
+                [f(x - z) + k(z) for z in k.domain if x - z in f.domain]
+            ),
+            domain=(x_minus_z + z for z in k.domain for x_minus_z in f.domain)
         )
 
     @classmethod
     def erosion(cls, f, k):
         return ImageFunction(
-            func=lambda x: max(0, min(map(lambda (x_add_z, z): f(x_add_z) - k(z), 
-                filter(lambda (x_add_z, z): x_add_z in f.domain, 
-                    ((tuple(map(sum, zip(x, z))), z) for z in k.domain)
-                )
-            ))),
-            domain=(tuple(map(lambda (l,r): l-r, zip(x_add_z, z))) for z in k.domain for x_add_z in f.domain)
+            func=lambda x: max(0, min(
+                [f(x + z) - k(z) for z in k.domain if x + z in f.domain]
+            )),
+            domain=(x_add_z - z for z in k.domain for x_add_z in f.domain)
         )
 
     @classmethod
@@ -59,7 +55,7 @@ if __name__ == '__main__':
     oct_kernel = ImageFunction(
         func=lambda (x, y): 0,
         domain=(
-            (x, y) 
+            Coor((x, y))
             for x in xrange(-2, 3) for y in xrange(-2, 3)
             if not(x in (-2, 2) and y in (-2, 2))
         )
