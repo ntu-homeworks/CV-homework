@@ -86,14 +86,16 @@ class ImageFunction(object):
             raise ValueError('`domain` is not iterable.')
 
         self.func = func
-        self.domain = domain
+        self.domain = set(domain)
 
     def __call__(self, *args, **kwargs):
         return self.func(*args, **kwargs)
 
     def __iter__(self):
-        self.domain = set(self.domain)
         return iter(self.domain)
+
+    def __contains__(self, item):
+        return item in self.domain
 
     @classmethod
     def from_image(cls, img):
@@ -104,7 +106,8 @@ class ImageFunction(object):
 
     def to_image(self, *args):
         ret = Image.new(*args)
-        for p in self:
+
+        for p in self.domain:
             if self._in_range(p, ret.size):
                 ret.putpixel(p, self(p))
 
