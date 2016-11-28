@@ -18,7 +18,7 @@ def draw_histogram(result):
 
     result_data = Pixels2D([1] * 256 * height, width=256)
     for x, h in enumerate(result):
-        for y in range(h):
+        for y in xrange(h):
             result_data[x, height - 1 - y] = 0
 
     result_img.putdata(result_data.data)
@@ -27,10 +27,10 @@ def draw_histogram(result):
 def connected_components(img_bin):
     pixels = Pixels2D(img_bin)
     labels = []
-    pixels_label = [[-1] * img.width for h in range(img.height)]
+    pixels_label = [[-1] * img.width for h in xrange(img.height)]
 
-    for y in range(img.height):
-        for x in range(img.width):
+    for y in xrange(img.height):
+        for x in xrange(img.width):
             if pixels[x, y] != 1:
                 continue
 
