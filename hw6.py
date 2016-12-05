@@ -11,7 +11,20 @@ def downsampling(img, size):
     result.putdata([pixels[x * ratio_x, y * ratio_y] for y in xrange(height) for x in xrange(width)])
     return result
 
-class YokoiConnNumber(object):
+class SymbolicOperator(object):
+
+    @classmethod
+    def _x(cls, pixels, size, center):
+        width, height = size
+        center_x, center_y = center
+
+        return map(lambda (_x, _y): pixels[_x, _y] if 0 <= _x < img.width and 0 <= _y < img.height else 0,
+            map(lambda (_x, _y): (center_x + _x, center_y + _y), [
+                (0, 0), (1, 0), (0, -1), (-1, 0), (0, 1), (1, 1), (1, -1), (-1, -1), (-1, 1),
+            ])
+        )
+
+class YokoiConnNumber(SymbolicOperator):
 
     def __new__(cls, img):
         return [
@@ -23,11 +36,7 @@ class YokoiConnNumber(object):
     def _f(cls, img, (center_x, center_y)):
         pixels = Pixels2D(img)
 
-        x = map(lambda (_x, _y): pixels[_x, _y] if 0 <= _x < img.width and 0 <= _y < img.height else 0,
-                map(lambda (_x, _y): (center_x + _x, center_y + _y), [
-                    (0, 0), (1, 0), (0, -1), (-1, 0), (0, 1), (1, 1), (1, -1), (-1, -1), (-1, 1),
-                ])
-            )
+        x = cls._x(pixels, img.size, (center_x, center_y))
 
         a = map(cls._h, [
                 (x[0], x[1], x[6], x[2]),
