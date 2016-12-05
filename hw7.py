@@ -40,3 +40,42 @@ class PairRelationship(SymbolicOperator, Pixels2D):
         ]
 
 
+class ConnectedShrink(SymbolicOperator):
+    connectivity = 8
+
+    @classmethod
+    def _f(cls, a, x0):
+        return 0 if a.count(1) == 1 else x0
+
+    @classmethod
+    def _a(cls, x):
+        return map(cls._h, (
+            (x[0], x[1], x[6], x[2]),
+            (x[0], x[2], x[7], x[3]),
+            (x[0], x[3], x[8], x[4]),
+            (x[0], x[4], x[5], x[1]),
+        ))
+
+    @classmethod
+    def _h(cls, (b, c, d, e)):
+        if cls.connectivity == 4:
+            return 1 if b == c and (b != d or b != e) else 0
+        if cls.connectivity == 8:
+            return 1 if b != c and (b == d or b == e) else 0
+
+
+class Thinning(ConnectedShrink, Pixels2D):
+    
+    def __init__(self, original_img, marked_img):
+        width, height = original_img.size
+        self.size = original_img.size
+        self.data = list(original_img.data)
+
+        for y in xrange(height):
+            for x in xrange(width):
+                X = self._x(self, self.size, (x, y))
+                a = self._a(X)
+
+                if self._f(a, self[x, y]) == 0 and marked_img[x, y] == 'p':
+                    self[x, y] = 0
+
