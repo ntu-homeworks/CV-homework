@@ -1,15 +1,15 @@
 from hw6 import SymbolicOperator, downsampling
+from hw2 import thresholding
 from helpers.image import Pixels2D
 from PIL import Image
 
 class InteriorBorder(SymbolicOperator, Pixels2D):
     connectivity = 8
 
-    def __init__(self, *args, **kwargs):
-        super(InteriorBorder, self).__init__(*args, **kwargs)
-
-        if not hasattr(self, "size"):
-            raise ValueError("`size` is required to initialize `%s`." % self.__class__)
+    def __init__(self, pixels, size):
+        self.data = pixels.data
+        self.size = size
+        self.width = size[0]
 
         self.data = [
             0 if self[x, y] == 0
@@ -25,11 +25,10 @@ class PairRelationship(SymbolicOperator, Pixels2D):
     m = 'i'
     theta = 1
 
-    def __init__(self, *args, **kwargs):
-        super(SymbolicOperator, self).__init__(*args, **kwargs)
-
-        if not hasattr(self, "size"):
-            raise ValueError("`size` is required to initialize `%s`." % self.__class__)
+    def __init__(self, pixels, size):
+        self.data = pixels.data
+        self.size = size
+        self.width = size[0]
 
         h = lambda a, m: 1 if a == m else 0
         self.data = [
@@ -41,7 +40,7 @@ class PairRelationship(SymbolicOperator, Pixels2D):
 
 
 class ConnectedShrink(SymbolicOperator):
-    connectivity = 8
+    connectivity = 4
 
     @classmethod
     def _f(cls, a, x0):
@@ -65,17 +64,40 @@ class ConnectedShrink(SymbolicOperator):
 
 
 class Thinning(ConnectedShrink, Pixels2D):
-    
-    def __init__(self, original_img, marked_img):
-        width, height = original_img.size
-        self.size = original_img.size
+
+    def __init__(self, original_img, marked_img, size):
+        self.width, height = size
+        self.size = size
         self.data = list(original_img.data)
 
         for y in xrange(height):
-            for x in xrange(width):
+            for x in xrange(self.width):
                 X = self._x(self, self.size, (x, y))
                 a = self._a(X)
 
                 if self._f(a, self[x, y]) == 0 and marked_img[x, y] == 'p':
                     self[x, y] = 0
+
+    @classmethod
+    def repeat(cls, img, times):
+        do = lambda x: cls(x, PairRelationship(InteriorBorder(x, img.size), img.size), img.size)
+
+        prev = Pixels2D(img, size=img.size)
+        result = do(prev)
+
+        while prev.data != result.data and times > 0:
+            result, prev = do(result), result
+            times -= 1
+
+        ret = Image.new(img.mode, img.size)
+        ret.putdata(result.data)
+        return ret
+
+
+if __name__ == '__main__':
+    img = Image.open('benchmarks/lena.bmp')
+    bin_img = thresholding(img, 128)
+    small_img = downsampling(bin_img, (64, 64))
+
+    Thinning.repeat(small_img, float('inf')).save('results/thinning_small.bmp')
 

@@ -18,7 +18,7 @@ class SymbolicOperator(object):
         width, height = size
         center_x, center_y = center
 
-        return map(lambda (_x, _y): pixels[_x, _y] if 0 <= _x < img.width and 0 <= _y < img.height else 0,
+        return map(lambda (_x, _y): pixels[_x, _y] if 0 <= _x < width and 0 <= _y < height else 0,
             map(lambda (_x, _y): (center_x + _x, center_y + _y), [
                 (0, 0), (1, 0), (0, -1), (-1, 0), (0, 1), (1, 1), (1, -1), (-1, -1), (-1, 1),
             ])
