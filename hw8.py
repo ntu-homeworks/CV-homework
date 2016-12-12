@@ -95,7 +95,7 @@ if __name__ == '__main__':
 
     # Make noise on benchmarks
     noises = {}
-    noises['gause10'], noises['gause30'] = [NoiseRemover(img.gen_gaussian_noise(amplitude)) for amplitude in (10, 30)]
+    noises['gauss10'], noises['gauss30'] = [NoiseRemover(img.gen_gaussian_noise(amplitude)) for amplitude in (10, 30)]
     noises['sap005'], noises['sap01'] = [NoiseRemover(img.gen_sap_noise(threshold)) for threshold in (0.05, 0.1)]
 
     # Perform cleaning
@@ -109,20 +109,24 @@ if __name__ == '__main__':
     }
 
     # Store noise pictures (4 pictures)
-    map(lambda (k, v): v.img.save("results/%s/original.bmp" % k), noises.iteritems())
+    map(lambda (k, v): v.img.save("results/%s/noise.bmp" % k), noises.iteritems())
 
     # Store results (24 pictures)
-    map(lambda (name, img): img.save(name), [
-        ("results/%s/%s.bmp" % (name, fltr), img)
-        for name, rsts in results.iteritems()
-        for fltr, img in rsts.iteritems()
+    map(lambda (name, result): result.save(name), [
+        ("results/%s/%s.bmp" % (name, fltr), result)
+        for name, noise in results.iteritems()
+        for fltr, result in noise.iteritems()
     ])
 
-    # Calculate SNR
+    # Calculate SNR of processed images and noise images
     SNRs = {
-        "%s/%s" % (name, fltr): snr(noises[name].img, img)
-        for name, rsts in results.iteritems()
-        for fltr, img in rsts.iteritems()
+        "%s/%s" % (name, fltr): snr(img.img, result.img)
+        for name, noise in results.iteritems()
+        for fltr, result in noise.iteritems()
     }
+    SNRs.update({
+        "%s" % name: snr(img.img, noise.img)
+        for name, noise in noises.iteritems()
+    })
     print SNRs
 
