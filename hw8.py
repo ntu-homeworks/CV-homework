@@ -118,7 +118,7 @@ if __name__ == '__main__':
 
     # Calculate SNR of processed images and noise images
     SNRs = {
-        "%s/%s" % (name, fltr): snr(img.img, result.img)
+        "%s/%s" % (name, fltr): snr(img.img, result)
         for name, noise in results.iteritems()
         for fltr, result in noise.iteritems()
     }
