@@ -46,17 +46,15 @@ class NoiseRemover(object):
     box_filter = lambda self, size: self._process_box(size, lambda l: sum(l) / len(l))
     median_filter = lambda self, size: self._process_box(size, lambda l: sorted(l)[len(l) / 2])
 
-    def open_then_close(self):
-        return Morphology.closing(
-            Morphology.opening(self.function, self.oct_kernel),
-            self.oct_kernel
-        ).to_image('L', self.img.size)
+    open_then_close = lambda self: Morphology.closing(
+        Morphology.opening(self.function, self.oct_kernel),
+        self.oct_kernel
+    ).to_image('L', self.img.size)
 
-    def close_then_open(self):
-        return Morphology.opening(
-            Morphology.closing(self.function, self.oct_kernel),
-            self.oct_kernel
-        ).to_image('L', self.img.size)
+    close_then_open = lambda self: Morphology.opening(
+        Morphology.closing(self.function, self.oct_kernel),
+        self.oct_kernel
+    ).to_image('L', self.img.size)
 
     def _process_box(self, size, fn):
         if size[0] != size[1]:
